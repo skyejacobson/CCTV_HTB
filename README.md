@@ -1,2 +1,7 @@
 # CCTV_HTB
 Personal writeup of the seasonal CCTV Hack The Box machine
+
+
+Intial scan of the machine gives us 2 PoA:
+
+```
