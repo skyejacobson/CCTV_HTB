@@ -45,3 +45,4 @@ PORT   STATE SERVICE
 |_http-title: Did not follow redirect to http://cctv.htb/
 ```
 
+We go to that address
