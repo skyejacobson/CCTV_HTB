@@ -54,3 +54,5 @@ We can scan the network using `ffuf` or `feroxbuster` but nothing of note is rev
 Note that Zoneminder has default credentials so when using `admin:admin` we are actually able to bypass any exploit and log directly on to the dashboard. We then are able to see the version info. `Zoneminder v1.37.63`.
 
 CVE and Zoneminder v1.37.63 placed into the search bar reveals [CVE-2024-51482](https://github.com/ZoneMinder/zoneminder/security/advisories/GHSA-qm8h-3xvf-m7j3)
+
+Zoneminder v1.37.63 is vulnerable to boolean-based SQL Injection. The impact of this is total control of SQL Databases: loss of data confidentiality and integrity. Leading to information disclosure and possible privilege escalation.
