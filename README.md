@@ -50,3 +50,7 @@ The machine itself is setup to block ping probes so we can bypass that and impro
 The scan produces a result that may take a minute to load but eventually pulls up a Zoneminder CCTV website. The website allows for admin/staff login. 
 
 We can scan the network using `ffuf` or `feroxbuster` but nothing of note is revealed in the scan.
+
+Note that Zoneminder has default credentials so when using `admin:admin` we are actually able to bypass any exploit and log directly on to the dashboard. We then are able to see the version info. `Zoneminder v1.37.63`.
+
+CVE and Zoneminder v1.37.63 placed into the search bar reveals [CVE-2024-51482](https://github.com/ZoneMinder/zoneminder/security/advisories/GHSA-qm8h-3xvf-m7j3)
