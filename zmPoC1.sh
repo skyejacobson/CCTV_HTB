@@ -1,4 +1,5 @@
 #!/bin/bash
+
 TARGET="http://10.129.61.151/zm/index.php?view=request&request=event&action=removetag&tid=1"
 COOKIE="ZMSESSID=SESSION_COOKIE_HERE"
 

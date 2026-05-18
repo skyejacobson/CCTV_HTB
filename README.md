@@ -45,4 +45,8 @@ PORT   STATE SERVICE
 |_http-title: Did not follow redirect to http://cctv.htb/
 ```
 
-We go to that address
+The machine itself is setup to block ping probes so we can bypass that and improve scan efficiency by using the `-sS` flag. 
+
+The scan produces a result that may take a minute to load but eventually pulls up a Zoneminder CCTV website. The website allows for admin/staff login. 
+
+We can scan the network using `ffuf` or `feroxbuster` but nothing of note is revealed in the scan.
