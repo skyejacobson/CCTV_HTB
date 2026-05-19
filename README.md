@@ -173,3 +173,54 @@ Failed to connect to https://changelogs.ubuntu.com/meta-release-lts. Check your 
 Last login: Sun May 17 12:57:01 2026 from 10.10.16.212
 mark@cctv:~$
 ```
+
+Now that we have access to the user `mark` we can see that the `user` flag is not in the home directory where it should be.
+
+```
+mark@cctv:~$ ls
+mark@cctv:~$ cd ..
+mark@cctv:/home$ ls
+mark  sa_mark
+mark@cctv:/home$ cd sa_mark
+-bash: cd: sa_mark: Permission denied
+mark@cctv:/home$ 
+```
+
+We have to assume the user flag exists within the `sa_mark` account instead so privilege escalation is required.
+
+First step is always to enumerate permissions and check the machine for flaws or inconsistencies. 
+
+```
+mark:x:1000:1000:mark:/home/mark:/bin/bash
+dnsmasq:x:999:65534:dnsmasq:/var/lib/misc:/usr/sbin/nologin
+sa_mark:x:1001:1001::/home/sa_mark:/bin/sh
+mysql:x:110:111:MySQL Server,,,:/nonexistent:/bin/false
+postfix:x:111:113::/var/spool/postfix:/usr/sbin/nologin
+motion:x:112:115::/var/lib/motion:/usr/sbin/nologin
+_laurel:x:996:988::/var/log/laurel:/bin/false
+```
+
+Commands like `sudo -l` or checking readable files brings us no luck but there is a hint in the `/etc/passwd` file. The machine is hosting 2 seperate services `postfix` and `motion`. `postfix` is a SMTP service so probably no luck there but `motion` is interesting.
+
+`motion` is a highly popular open-source software program that turns standard video streams into a robust motion detection and surveillance system. When running as a background service (or daemon), it continuously analyzes camera feeds, detects visual changes, and triggers actions like recording video, saving images, or sending alerts. Considering the name of the machine this is likely our way in. 
+
+We can verify motion is running on the machine using `ss`.
+
+```
+mark@cctv:/home$ ss -tlnp
+State      Recv-Q     Send-Q         Local Address:Port            Peer Address:Port     Process     
+LISTEN     0          128                127.0.0.1:8765                 0.0.0.0:*                    
+LISTEN     0          4096               127.0.0.1:8888                 0.0.0.0:*                    
+LISTEN     0          4096               127.0.0.1:9081                 0.0.0.0:*                    
+LISTEN     0          4096                 0.0.0.0:22                   0.0.0.0:*                    
+LISTEN     0          4096               127.0.0.1:8554                 0.0.0.0:*                    
+LISTEN     0          70                 127.0.0.1:33060                0.0.0.0:*                    
+LISTEN     0          4096               127.0.0.1:7999                 0.0.0.0:*                    
+LISTEN     0          4096               127.0.0.1:1935                 0.0.0.0:*                    
+LISTEN     0          4096           127.0.0.53%lo:53                   0.0.0.0:*                    
+LISTEN     0          4096              127.0.0.54:53                   0.0.0.0:*                    
+LISTEN     0          151                127.0.0.1:3306                 0.0.0.0:*                    
+LISTEN     0          4096                    [::]:22                      [::]:*                    
+LISTEN     0          511                        *:80                         *:*                    
+```
+
