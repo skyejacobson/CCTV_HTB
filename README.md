@@ -170,7 +170,7 @@ The list of available updates is more than a week old.
 To check for new updates run: sudo apt update
 Failed to connect to https://changelogs.ubuntu.com/meta-release-lts. Check your Internet connection or proxy settings
 
-Last login: Sun May 17 12:57:01 2026 from 10.10.16.212
+Last login: Sun May 17 12:57:01 2026 from ATTACKER_IP
 mark@cctv:~$
 ```
 
@@ -204,6 +204,32 @@ Commands like `sudo -l` or checking readable files brings us no luck but there i
 
 `motion` is a highly popular open-source software program that turns standard video streams into a robust motion detection and surveillance system. When running as a background service (or daemon), it continuously analyzes camera feeds, detects visual changes, and triggers actions like recording video, saving images, or sending alerts. Considering the name of the machine this is likely our way in. 
 
+`motion` as a service contains a `motion.conf` file that might supply useful information about its running config.
+
+```
+mark@cctv:~$ find / -name "motion.conf" 2>/dev/null
+/etc/motioneye/motion.conf
+/etc/motion/motion.conf
+mark@cctv:~$ cat /etc/motioneye/motion.conf
+# @admin_username admin
+# @normal_username user
+# @admin_password 989c5a8ee87a0e9521ec81a79187d162109282f0
+# @lang en
+# @enabled on
+# @normal_password 
+
+
+setup_mode off
+webcontrol_port 7999
+webcontrol_interface 1
+webcontrol_localhost on
+webcontrol_parms 2
+
+camera camera-1.conf
+```
+
+2 pieces of useful information exists here. We have plaintext login information as well as `webcontrol_port 7999` to verify its service and where its running.
+
 We can verify motion is running on the machine using `ss`.
 
 ```
@@ -223,4 +249,85 @@ LISTEN     0          151                127.0.0.1:3306                 0.0.0.0:
 LISTEN     0          4096                    [::]:22                      [::]:*                    
 LISTEN     0          511                        *:80                         *:*                    
 ```
+
+Great. We can see that port `7999` is being locally hosted on this machine. We can once again verify the service and version info of `motion` using the provided `pID.sh` file on the victim machine.
+
+```
+mark@cctv:~$ ./pID.sh
+=== Port 8765===
+HTTP/1.1 200 OK
+Server: motionEye/0.43.1b4
+Content-Type: text/html; charset=UTF-8
+Date: Sun, 17 May 2026 13:25:17 GMT
+Etag: "da39a3ee5e6b4b0d3255bfef95601890afd80709"
+
+=== Port 8888===
+HTTP/1.1 404 Not Found
+Access-Control-Allow-Credentials: true
+Access-Control-Allow-Origin: *
+Content-Type: text/plain
+Server: mediamtx
+
+=== Port 9081===
+
+=== Port 8554===
+
+=== Port 7999===
+
+=== Port 1935===
+
+=== Port 3306===
+
+=== Port 33060===
+
+mark@cctv:~$ 
+```
+
+The `http` interface is being hosted on port `8765` and is running the GUI `motionEye v0.43.1b4`. We can now research any CVE's or exploit vulnerabilities within `motionEye`. Research gives us nothing yet so we can login in first to verify.
+
+Because its being locally hosted we can ssh tunnel to our attacker machine to view the http website.
+
+```
+┌──(root㉿kali-linux-2024-2)-[/home/parallels/Documents/CCTV]
+└─# ssh -L 8765:127.0.0.1:8765 mark@10.129.62.31
+mark@10.129.62.31's password: 
+Welcome to Ubuntu 24.04.4 LTS (GNU/Linux 6.8.0-101-generic x86_64)
+
+ * Documentation:  https://help.ubuntu.com
+ * Management:     https://landscape.canonical.com
+ * Support:        https://ubuntu.com/pro
+
+ System information as of Mon 18 May 03:33:26 UTC 2026
+
+  System load:           0.0
+  Usage of /:            71.5% of 8.70GB
+  Memory usage:          27%
+  Swap usage:            0%
+  Processes:             253
+  Users logged in:       1
+  IPv4 address for eth0: 10.129.62.31
+  IPv6 address for eth0: dead:beef::a0de:adff:fe01:f3d8
+
+ * Strictly confined Kubernetes makes edge and IoT secure. Learn how MicroK8s
+   just raised the bar for easy, resilient and secure K8s cluster deployment.
+
+   https://ubuntu.com/engage/secure-kubernetes-at-the-edge
+
+Expanded Security Maintenance for Applications is not enabled.
+
+0 updates can be applied immediately.
+
+14 additional security updates can be applied with ESM Apps.
+Learn more about enabling ESM Apps service at https://ubuntu.com/esm
+
+
+The list of available updates is more than a week old.
+To check for new updates run: sudo apt update
+Failed to connect to https://changelogs.ubuntu.com/meta-release-lts. Check your Internet connection or proxy settings
+
+Last login: Mon May 18 03:25:57 2026 from ATTACKER_IP
+mark@cctv:~$ 
+```
+We can now view the website via any web browser using `http://127.0.0.1:8765/` and login using the credentials found in the `.conf` file.
+
 
