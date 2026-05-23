@@ -49,7 +49,7 @@ The machine itself is setup to block ping probes so we can bypass that and impro
 
 The scan produces a result that may take a minute to load but eventually pulls up a Zoneminder CCTV website. The website allows for admin/staff login. 
 
-We can scan the network using `ffuf` or `feroxbuster` but nothing of note is revealed in the scan.
+We can scan the website using `ffuf` or `feroxbuster` but nothing of note is revealed in the scan.
 
 Note that Zoneminder has default credentials so when using `admin:admin` we are actually able to bypass any exploit and log directly on to the dashboard. We then are able to see the version info. `Zoneminder v1.37.63`.
 
